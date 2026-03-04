@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Patrones de Arquitectura Android</string>
+    <string name="tasks_title">Lista de tareas</string>
+    <string name="task_completed_checkbox">Marcar tarea como completada</string>
+</resources>
