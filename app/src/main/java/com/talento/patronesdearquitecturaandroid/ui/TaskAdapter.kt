@@ -1,72 +1,48 @@
-package com.talento.patronesdearquitecturaandroid.ui;
+package com.talento.patronesdearquitecturaandroid.ui
 
-import android.view.LayoutInflater;
-import android.view.ViewGroup;
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.talento.patronesdearquitecturaandroid.databinding.ItemTaskBinding
+import com.talento.patronesdearquitecturaandroid.model.Task
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+class TaskAdapter(
+    private val onTaskCheckedChanged: (position: Int, isChecked: Boolean) -> Unit
+) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
-import com.talento.patronesdearquitecturaandroid.databinding.ItemTaskBinding;
-import com.talento.patronesdearquitecturaandroid.model.Task;
+    private var taskList: List<Task> = emptyList()
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
-
-    public interface OnTaskCheckedChangeListener {
-        void onTaskCheckedChanged(int position, boolean isChecked);
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        val binding = ItemTaskBinding.inflate(inflater, parent, false)
+        return TaskViewHolder(binding)
     }
 
-    private final OnTaskCheckedChangeListener listener;
-    private List<Task> taskList = new ArrayList<>();
-
-    public TaskAdapter(OnTaskCheckedChangeListener listener) {
-        this.listener = listener;
+    override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
+        holder.bind(taskList[position])
     }
 
-    @NonNull
-    @Override
-    public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        ItemTaskBinding binding = ItemTaskBinding.inflate(inflater, parent, false);
-        return new TaskViewHolder(binding);
+    override fun getItemCount(): Int = taskList.size
+
+    fun submitList(updatedList: List<Task>?) {
+        taskList = updatedList?.toList() ?: emptyList()
+        notifyDataSetChanged()
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        holder.bind(taskList.get(position));
-    }
+    inner class TaskViewHolder(private val binding: ItemTaskBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
-    @Override
-    public int getItemCount() {
-        return taskList.size();
-    }
-
-    public void submitList(List<Task> updatedList) {
-        taskList = updatedList == null ? new ArrayList<>() : new ArrayList<>(updatedList);
-        notifyDataSetChanged();
-    }
-
-    class TaskViewHolder extends RecyclerView.ViewHolder {
-        private final ItemTaskBinding binding;
-
-        TaskViewHolder(ItemTaskBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
-        }
-
-        void bind(Task task) {
-            binding.setTask(task);
-            binding.completedCheckBox.setOnCheckedChangeListener(null);
-            binding.completedCheckBox.setChecked(task.isCompleted());
-            binding.completedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                int adapterPosition = getBindingAdapterPosition();
-                if (adapterPosition != RecyclerView.NO_POSITION && listener != null) {
-                    listener.onTaskCheckedChanged(adapterPosition, isChecked);
+        fun bind(task: Task) {
+            binding.task = task
+            binding.completedCheckBox.setOnCheckedChangeListener(null)
+            binding.completedCheckBox.isChecked = task.isCompleted
+            binding.completedCheckBox.setOnCheckedChangeListener { _, isChecked ->
+                val adapterPosition = bindingAdapterPosition
+                if (adapterPosition != RecyclerView.NO_POSITION) {
+                    onTaskCheckedChanged(adapterPosition, isChecked)
                 }
-            });
-            binding.executePendingBindings();
+            }
+            binding.executePendingBindings()
         }
     }
 }

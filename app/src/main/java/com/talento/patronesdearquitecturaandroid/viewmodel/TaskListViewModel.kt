@@ -1,49 +1,32 @@
-package com.talento.patronesdearquitecturaandroid.viewmodel;
+package com.talento.patronesdearquitecturaandroid.viewmodel
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.talento.patronesdearquitecturaandroid.model.Task
 
-import com.talento.patronesdearquitecturaandroid.model.Task;
+class TaskListViewModel : ViewModel() {
+    private val taskListMutableLiveData = MutableLiveData(createInitialTasks())
+    val taskListLiveData: LiveData<List<Task>> = taskListMutableLiveData
 
-import java.util.ArrayList;
-import java.util.List;
+    fun updateTaskCompletion(position: Int, isCompleted: Boolean) {
+        val currentTasks = taskListMutableLiveData.value ?: return
+        if (position !in currentTasks.indices) return
 
-public class TaskListViewModel extends ViewModel {
-    private final MutableLiveData<List<Task>> taskListLiveData = new MutableLiveData<>();
-
-    public TaskListViewModel() {
-        taskListLiveData.setValue(createInitialTasks());
-    }
-
-    public LiveData<List<Task>> getTaskListLiveData() {
-        return taskListLiveData;
-    }
-
-    public void updateTaskCompletion(int position, boolean isCompleted) {
-        List<Task> currentTasks = taskListLiveData.getValue();
-        if (currentTasks == null || position < 0 || position >= currentTasks.size()) {
-            return;
-        }
-
-        List<Task> updatedTasks = new ArrayList<>(currentTasks.size());
-        for (int i = 0; i < currentTasks.size(); i++) {
-            Task existingTask = currentTasks.get(i);
-            Task copiedTask = new Task(existingTask.getTitle(), existingTask.isCompleted());
-            if (i == position) {
-                copiedTask.setCompleted(isCompleted);
+        val updatedTasks = currentTasks.mapIndexed { index, task ->
+            if (index == position) {
+                task.copy(isCompleted = isCompleted)
+            } else {
+                task.copy()
             }
-            updatedTasks.add(copiedTask);
         }
-        taskListLiveData.setValue(updatedTasks);
+        taskListMutableLiveData.value = updatedTasks
     }
 
-    private List<Task> createInitialTasks() {
-        List<Task> initialTasks = new ArrayList<>();
-        initialTasks.add(new Task("Estudiar MVVM", false));
-        initialTasks.add(new Task("Implementar RecyclerView", false));
-        initialTasks.add(new Task("Conectar LiveData", false));
-        initialTasks.add(new Task("Probar en dispositivo real", false));
-        return initialTasks;
-    }
+    private fun createInitialTasks(): List<Task> = listOf(
+        Task(title = "Estudiar MVVM", isCompleted = false),
+        Task(title = "Implementar RecyclerView", isCompleted = false),
+        Task(title = "Conectar LiveData", isCompleted = false),
+        Task(title = "Probar en dispositivo real", isCompleted = false)
+    )
 }

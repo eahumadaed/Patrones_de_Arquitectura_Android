@@ -1,43 +1,41 @@
-package com.talento.patronesdearquitecturaandroid;
+package com.talento.patronesdearquitecturaandroid
 
-import android.os.Bundle;
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.talento.patronesdearquitecturaandroid.databinding.ActivityMainBinding
+import com.talento.patronesdearquitecturaandroid.ui.TaskAdapter
+import com.talento.patronesdearquitecturaandroid.viewmodel.TaskListViewModel
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.databinding.DataBindingUtil;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
+class MainActivity : AppCompatActivity() {
 
-import com.talento.patronesdearquitecturaandroid.databinding.ActivityMainBinding;
-import com.talento.patronesdearquitecturaandroid.ui.TaskAdapter;
-import com.talento.patronesdearquitecturaandroid.viewmodel.TaskListViewModel;
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var taskAdapter: TaskAdapter
+    private lateinit var taskListViewModel: TaskListViewModel
 
-public class MainActivity extends AppCompatActivity {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding.lifecycleOwner = this
 
-    private ActivityMainBinding binding;
-    private TaskAdapter taskAdapter;
-    private TaskListViewModel taskListViewModel;
+        taskListViewModel = ViewModelProvider(this)[TaskListViewModel::class.java]
+        binding.viewModel = taskListViewModel
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        binding.setLifecycleOwner(this);
-
-        taskListViewModel = new ViewModelProvider(this).get(TaskListViewModel.class);
-        binding.setViewModel(taskListViewModel);
-
-        setupRecyclerView();
-        observeTaskList();
+        setupRecyclerView()
+        observeTaskList()
     }
 
-    private void setupRecyclerView() {
-        taskAdapter = new TaskAdapter((position, isChecked) ->
-                taskListViewModel.updateTaskCompletion(position, isChecked));
-        binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        binding.recyclerView.setAdapter(taskAdapter);
+    private fun setupRecyclerView() {
+        taskAdapter = TaskAdapter { position, isChecked ->
+            taskListViewModel.updateTaskCompletion(position, isChecked)
+        }
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = taskAdapter
     }
 
-    private void observeTaskList() {
-        taskListViewModel.getTaskListLiveData().observe(this, taskAdapter::submitList);
+    private fun observeTaskList() {
+        taskListViewModel.taskListLiveData.observe(this, taskAdapter::submitList)
     }
 }
